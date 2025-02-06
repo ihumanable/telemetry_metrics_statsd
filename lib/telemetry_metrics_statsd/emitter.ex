@@ -13,13 +13,17 @@ defmodule TelemetryMetricsStatsd.Emitter do
   def child_spec([i, options]) do
     %{
       id: {__MODULE__, i},
-      start: {__MODULE__, :start_link, [options]},
+      start: {__MODULE__, :start_link, [{i, options}]},
       restart: :permanent
     }
   end
 
-  def start_link(options) do
-    GenServer.start_link(__MODULE__, options)
+  def start_link({i, options}) do
+    GenServer.start_link(__MODULE__, options, name: name(i))
+  end
+
+  def name(i) do
+    :"#{__MODULE__}[#{i}]"
   end
 
   ## Client
