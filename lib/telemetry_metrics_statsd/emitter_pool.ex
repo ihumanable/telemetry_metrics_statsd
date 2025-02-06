@@ -4,7 +4,7 @@ defmodule TelemetryMetricsStatsd.EmitterPool do
   alias TelemetryMetricsStatsd.Emitter
 
   def start_link(options) do
-    Supervisor.start_link(__MODULE__, options)
+    Supervisor.start_link(__MODULE__, options, name: __MODULE__)
   end
 
   def init(options) do
@@ -25,7 +25,7 @@ defmodule TelemetryMetricsStatsd.EmitterPool do
       handler_id = handler_id(event_name)
 
       # Take over if there's a stale handler for this id.
-      :ok = :telemetry.detach(handler_id)
+      :telemetry.detach(handler_id)
 
       :ok =
         :telemetry.attach(handler_id, event_name, &__MODULE__.handle_event/4, %{metrics: metrics})
@@ -44,7 +44,7 @@ defmodule TelemetryMetricsStatsd.EmitterPool do
   end
 
   defp get_emitter() do
-    case Enum.random(Supervisor.which_children(self())) do
+    case Enum.random(Supervisor.which_children(__MODULE__)) do
       {_, pid, _, _} when is_pid(pid) ->
         pid
 
